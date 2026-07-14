@@ -61,7 +61,7 @@ button{background:none; border:0; cursor:pointer}
 /* left */
 .rail-left{display:flex; flex-direction:column; gap:14px}
 .datecard{padding:16px 16px 18px; text-align:center}
-.wordmark{font-family:var(--num); font-weight:600; font-size:13px; letter-spacing:.02em;
+.wordmark{font-family:var(--num); font-weight:600; font-size:12px; line-height:1.4; letter-spacing:.02em;
   color:var(--accent); padding-bottom:12px; margin-bottom:12px; border-bottom:1px solid var(--line-soft)}
 .wordmark span{color:var(--tint2)}
 .datecard .d{font-size:12.5px; color:var(--muted); margin-top:9px}
@@ -349,7 +349,7 @@ body.shotting{background-image:none} .panel{max-height:none}
 <div class="app">
   <aside class="rail rail-left">
     <div class="card datecard">
-      <div class="wordmark">POMODORO<span>.NET</span></div>
+      <div class="wordmark">MOMO POMODORO<span>.NET</span></div>
       <div class="hud">today</div>
       <div class="d" id="today">—</div>
       <div class="now" id="nowClock">00:00:00</div>
@@ -705,7 +705,7 @@ function paintClock(){
   const bar=$("#bar");
   if(bar.children.length!==SEG){ bar.innerHTML=""; for(let i=0;i<SEG;i++) bar.appendChild(el("i")); }
   [...bar.children].forEach((c,i)=>c.classList.toggle("on", i<done));
-  document.title = st.running ? `${txt} · ${st.phase==="focus"?"집중":"휴식"}` : "POMODORO.NET";
+  document.title = st.running ? `${txt} · ${st.phase==="focus"?"집중":"휴식"}` : "MOMO POMODORO.NET";
 }
 function paintDots(){
   const n=Math.max(1,S.settings.longEvery), done=countToday()%n, d=$("#dots"); d.innerHTML="";
@@ -756,7 +756,7 @@ function chime(hi=true){
 }
 function notify(msg){
   if(!S.settings.notify||!("Notification" in window)||Notification.permission!=="granted") return;
-  try{ new Notification("POMODORO.NET",{body:msg}); }catch(e){}
+  try{ new Notification("MOMO POMODORO.NET",{body:msg}); }catch(e){}
 }
 
 /* 패널 */
