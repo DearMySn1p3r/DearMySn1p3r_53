@@ -494,6 +494,7 @@ let sT; function save(){ clearTimeout(sT); sT=setTimeout(()=>{
 const $=s=>document.querySelector(s);
 const el=(t,c)=>{const e=document.createElement(t); if(c)e.className=c; return e;};
 const pad=n=>String(n).padStart(2,"0");
+const isIME=e=>e.isComposing || e.keyCode===229;   // 한글 조합 중 Enter 중복 방지
 const dkey=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 const todayKey=()=>dkey(new Date());
 function toast(m){const t=$("#toast"); t.textContent=m; t.classList.add("show"); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("show"),2200);}
@@ -864,9 +865,12 @@ function editTask(row, t){
   row.innerHTML="";
   const inp=el("input"); inp.type="text"; inp.value=t.t; inp.className="evedit";
   const ok=el("button","del"); ok.textContent="✓"; ok.title="저장";
-  const done=()=>{ const v=inp.value.trim(); if(v){ t.t=v; save(); } renderPanel(); };
+  let fin=false;
+  const done=()=>{ if(fin) return; fin=true; const v=inp.value.trim(); if(v){ t.t=v; save(); } renderPanel(); };
   ok.onclick=done;
-  inp.onkeydown=e=>{ if(e.key==="Enter") done(); if(e.key==="Escape") renderPanel(); };
+  inp.onkeydown=e=>{ if(isIME(e)) return;
+    if(e.key==="Enter") done();
+    if(e.key==="Escape"){ fin=true; renderPanel(); } };
   inp.onblur=()=>setTimeout(done,120);
   row.append(inp, ok);
   inp.focus(); inp.select();
@@ -967,7 +971,7 @@ function renderPanel(){
     const im=el("button","mini"); im.textContent="가져오기";
     im.onclick=()=>{ const f=el("input"); f.type="file"; f.accept="application/json";
       f.onchange=()=>{ const fr=new FileReader(); fr.onload=()=>{ try{ S={...S,...JSON.parse(fr.result)};
-        applyTheme(); renderPanel(); paintStreak(); renderCal(); loadDay(); reset(); toast("불러왔어요");
+        applyTheme(); setLock(!!S.locked); setFold(!!S.folded); renderImage(); renderPanel(); paintStreak(); renderCal(); loadDay(); reset(); toast("불러왔어요");
       }catch(e){ toast("파일을 읽지 못했어요"); } }; fr.readAsText(f.files[0]); };
       f.click(); };
     const rs=el("button","mini"); rs.textContent="초기화";
@@ -981,7 +985,7 @@ function renderPanel(){
   if(tab==="tasks"){
     title("TASKS");
     const add=el("input"); add.type="text"; add.placeholder="적고 엔터";
-    add.onkeydown=e=>{ if(e.key==="Enter"&&add.value.trim()){ S.tasks.push({t:add.value.trim(),d:false}); add.value=""; save(); renderPanel(); } };
+    add.onkeydown=e=>{ if(isIME(e)) return; if(e.key==="Enter"&&add.value.trim()){ S.tasks.push({t:add.value.trim(),d:false}); add.value=""; save(); renderPanel(); } };
     p.appendChild(add);
     const list=el("div");
     S.tasks.forEach((t,i)=>{
@@ -1100,21 +1104,25 @@ function editEvent(row, ev, i){
   row.innerHTML="";
   const inp=el("input"); inp.type="text"; inp.value=ev.t; inp.className="evedit";
   const ok=el("button","del"); ok.textContent="✓"; ok.title="저장";
+  let fin=false;
   const done=()=>{
+    if(fin) return; fin=true;
     const v=inp.value.trim();
     if(v){ ev.t=v; save(); }
     renderEvents(); renderCal();
   };
   ok.onclick=done;
   inp.onkeydown=e=>{
+    if(isIME(e)) return;
     if(e.key==="Enter") done();
-    if(e.key==="Escape") renderEvents();
+    if(e.key==="Escape"){ fin=true; renderEvents(); }
   };
   inp.onblur=()=>setTimeout(done,120);
   row.append(inp, ok);
   inp.focus(); inp.select();
 }
 $("#evAdd").addEventListener("keydown",e=>{
+  if(isIME(e)) return;
   const v=e.target.value.trim();
   if(e.key==="Enter" && v){
     (S.events[sel] ||= []).push({t:v, d:false});
@@ -1134,7 +1142,7 @@ function swPaint(){
   const ms = sw.mode==="stop" ? sw.elapsed : Math.max(0, sw.target-sw.elapsed);
   const t=Math.floor(ms/100), tenth=t%10, s=Math.floor(t/10)%60, m=Math.floor(t/600);
   $("#swTime").innerHTML=`${pad(m)}:${pad(s)}<small>.${tenth}</small>`;
-  if(sw.mode==="down" && sw.running && ms<=0){ swStop(); chime(false); toast("타이머가 끝났어요"); }
+  if(sw.mode==="down" && sw.running && ms<=0){ swStop(); sw.elapsed=0; sw.base=0; chime(false); toast("타이머가 끝났어요"); }
 }
 setInterval(()=>{ if(sw.running){ sw.elapsed=sw.base+(Date.now()-sw.t0); swPaint(); } },50);
 function swStart(){
