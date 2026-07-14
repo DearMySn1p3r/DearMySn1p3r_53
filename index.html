@@ -18,14 +18,18 @@
   --accent:#F58AB0;
   --radius:20px;
 
-  --line: color-mix(in srgb, var(--accent) 26%, transparent);
-  --line-soft: color-mix(in srgb, var(--accent) 14%, transparent);
-  --muted: color-mix(in srgb, var(--ink) 58%, transparent);
-  --faint: color-mix(in srgb, var(--ink) 34%, transparent);
-  --tint: color-mix(in srgb, var(--accent) 8%, transparent);
-  --tint2: color-mix(in srgb, var(--accent) 22%, transparent);
-  --soft: 0 6px 18px color-mix(in srgb, var(--accent) 14%, transparent);
-  --pop: 0 3px 0 color-mix(in srgb, var(--accent) 22%, transparent);
+  --line: rgba(245,138,176,.26);
+  --line-soft: rgba(245,138,176,.14);
+  --muted: rgba(74,59,67,.58);
+  --faint: rgba(74,59,67,.34);
+  --tint: rgba(245,138,176,.08);
+  --tint2: rgba(245,138,176,.22);
+  --soft: 0 6px 18px rgba(245,138,176,.14);
+  --today-ink: #B85F84;
+  --pop: 0 3px 0 rgba(245,138,176,.22);
+  --grid: rgba(245,138,176,.05);
+  --wash: rgba(245,138,176,.10);
+  --hover: rgba(74,59,67,.04);
 
   --ui:"Pretendard Variable", Pretendard, system-ui, -apple-system, sans-serif;
   --num:"Fredoka", "Pretendard Variable", sans-serif;
@@ -117,12 +121,12 @@ button{background:none; border:0; cursor:pointer}
 .badge{position:absolute; top:11px; right:11px; z-index:3; display:flex; gap:5px}
 .frame.folded .badge{top:50%; transform:translateY(-50%)}
 .badge button{font-size:11px; font-weight:600; padding:6px 12px; border-radius:99px; color:var(--muted);
-  background:color-mix(in srgb,#fff 88%,transparent); border:1px solid var(--line-soft);
+  background:rgba(255,255,255,.88); border:1px solid var(--line-soft);
   backdrop-filter:blur(6px); transition:.16s}
 .badge button:hover{color:var(--accent); border-color:var(--line)}
 .badge button.on{background:var(--accent); color:#fff; border-color:var(--accent)}
 .bar{position:absolute; left:10px; right:10px; bottom:9px; z-index:2; display:flex; gap:3px;
-  padding:4px; border-radius:99px; background:color-mix(in srgb,#fff 78%,transparent); backdrop-filter:blur(6px)}
+  padding:4px; border-radius:99px; background:rgba(255,255,255,.78); backdrop-filter:blur(6px)}
 .bar i{flex:1; height:4px; border-radius:99px; background:var(--tint2); transition:background .2s}
 .bar i.on{background:var(--accent)}
 
@@ -149,7 +153,11 @@ button{background:none; border:0; cursor:pointer}
 .hint{margin-left:auto; font-size:11px; color:var(--faint)}
 
 /* right */
-.rail-right{position:static}
+.rail-right{position:static; display:flex; flex-direction:column; gap:9px}
+.railtop{display:flex; align-items:center; justify-content:space-between; padding:0 4px}
+.railtop span{font-size:11.5px; font-weight:600; color:var(--faint)}
+.shotting .railtop{visibility:hidden}
+body.shotting{background-image:none}
 .panel{padding:18px; display:flex; flex-direction:column; gap:14px; max-height:calc(100dvh - 62px); overflow-y:auto}
 .panel::-webkit-scrollbar{width:6px}
 .panel::-webkit-scrollbar-thumb{background:var(--tint2); border-radius:99px}
@@ -183,7 +191,7 @@ input::placeholder,textarea::placeholder{color:var(--faint)}
 .slot:hover{border-color:var(--accent); transform:translateY(-1px)}
 .slot.on{border:2px solid var(--accent)}
 .slot .x{position:absolute; top:4px; right:4px; width:18px; height:18px; border-radius:50%; font-size:9px;
-  background:color-mix(in srgb,#fff 90%,transparent); color:var(--accent); opacity:0; transition:.15s}
+  background:rgba(255,255,255,.90); color:var(--accent); opacity:0; transition:.15s}
 .slot:hover .x{opacity:1}
 .swatches{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
 .swatch{width:26px; height:26px; border-radius:9px; border:1px solid var(--line-soft);
@@ -290,9 +298,9 @@ input[type=number],.laps span:last-child{font-family:var(--num); font-weight:500
 /* ── 사랑스러운 잔손질 ── */
 body{
   background-image:
-    linear-gradient(color-mix(in srgb, var(--accent) 5%, transparent) 1px, transparent 1px),
-    linear-gradient(90deg, color-mix(in srgb, var(--accent) 5%, transparent) 1px, transparent 1px),
-    radial-gradient(120% 60% at 50% -10%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 65%);
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+    radial-gradient(120% 60% at 50% -10%, var(--wash), transparent 65%);
   background-size:26px 26px, 26px 26px, 100% 100%;
   background-attachment:fixed;
 }
@@ -310,7 +318,7 @@ body{
 .task .box::after,.ev .box::after{content:"♥"}
 .task.done .box,.ev.done .box{color:#fff}
 /* 캘린더 오늘/선택 */
-.cal .day.today{background:var(--tint); color:color-mix(in srgb, var(--accent) 72%, var(--ink)); font-weight:600}
+.cal .day.today{background:var(--tint); color:var(--today-ink); font-weight:600}
 .cal .day.sel{transform:scale(1.04)}
 /* 사진 프레임 안쪽 부드러운 테두리 */
 .frame::after,.frame::before{border-width:2px}
@@ -325,7 +333,11 @@ body{
   .menu{flex:2 1 240px; flex-direction:row; flex-wrap:wrap}
   .menu button{width:auto; flex:1; justify-content:center}
   .streak{flex:1 1 150px}
-  .rail-right{position:static} .panel{max-height:none}
+  .rail-right{position:static; display:flex; flex-direction:column; gap:9px}
+.railtop{display:flex; align-items:center; justify-content:space-between; padding:0 4px}
+.railtop span{font-size:11.5px; font-weight:600; color:var(--faint)}
+.shotting .railtop{visibility:hidden}
+body.shotting{background-image:none} .panel{max-height:none}
   .frame{aspect-ratio:4/3}
   .bottom{grid-template-columns:1fr}
   }
@@ -344,13 +356,13 @@ body{
       <div class="phase" id="phaseLabel">집중</div>
     </div>
     <nav class="card menu" id="menu" role="tablist">
-      <button role="tab" data-tab="image" aria-selected="true"><span class="car">▶</span>사진</button>
-      <button role="tab" data-tab="lines"><span class="car">▶</span>대사</button>
-      <button role="tab" data-tab="color"><span class="car">▶</span>색상</button>
-      <button role="tab" data-tab="tasks"><span class="car">▶</span>할 일</button>
-      <button role="tab" data-tab="log"><span class="car">▶</span>기록</button>
-      <button role="tab" data-tab="ooc"><span class="car">▶</span>프롬프트</button>
-      <button role="tab" data-tab="timer"><span class="car">▶</span>설정</button>
+      <button role="tab" data-tab="image" aria-selected="true"><span class="car">▶</span>PHOTO</button>
+      <button role="tab" data-tab="lines"><span class="car">▶</span>SCRIPT</button>
+      <button role="tab" data-tab="color"><span class="car">▶</span>COLOR</button>
+      <button role="tab" data-tab="tasks"><span class="car">▶</span>TASKS</button>
+      <button role="tab" data-tab="log"><span class="car">▶</span>LOG</button>
+      <button role="tab" data-tab="ooc"><span class="car">▶</span>PROMPT</button>
+      <button role="tab" data-tab="timer"><span class="car">▶</span>SETTINGS</button>
     </nav>
     <div class="card streak">
       <div class="hud">sessions</div>
@@ -395,13 +407,17 @@ body{
   </main>
 
   <aside class="rail rail-right">
+    <div class="railtop">
+      <span id="shotName">PHOTO</span>
+      <button class="mini" id="btnShot">CAPTURE</button>
+    </div>
     <section class="card panel" id="panel"></section>
   </aside>
 
   <section class="bottom">
     <div class="card box">
       <div class="boxhead">
-        <h3>캘린더</h3>
+        <h3>CALENDAR</h3>
         <div class="nav"><button id="calPrev">‹</button><span id="calLabel">—</span><button id="calNext">›</button></div>
       </div>
       <div class="cal" id="cal"></div>
@@ -414,7 +430,7 @@ body{
 
     <div class="card box">
       <div class="boxhead">
-        <h3>타이머</h3>
+        <h3>TIMER</h3>
         <div class="tabs" id="swTabs">
           <button class="on" data-mode="stop">스톱워치</button>
           <button data-mode="down">카운트다운</button>
@@ -435,8 +451,8 @@ body{
 
     <div class="card box memo">
       <div class="boxhead">
-        <h3 id="memoDate">메모</h3>
-        <span class="save" id="memoSaved">자동 저장</span>
+        <h3 id="memoDate">MEMO</h3>
+        <span class="save" id="memoSaved">auto save</span>
       </div>
       <textarea id="memo" placeholder="오늘 남기고 싶은 말"></textarea>
     </div>
@@ -485,11 +501,36 @@ function lum(hex){const c=hex.replace("#",""); const v=i=>parseInt(c.substr(i,2)
   const f=x=>x<=.03928?x/12.92:((x+.055)/1.055)**2.4; return .2126*f(v(0))+.7152*f(v(2))+.0722*f(v(4));}
 
 /* 테마 */
+/* 색 계산 헬퍼 (html2canvas가 color-mix/oklab을 못 읽어서 CSS엔 실제 rgba만 넣는다) */
+function hex2rgb(h){
+  h=(h||"#000").trim();
+  if(h[0]!=="#"){ const m=h.match(/\d+/g); return m?[+m[0],+m[1],+m[2]]:[0,0,0]; }
+  if(h.length===4) h="#"+[...h.slice(1)].map(c=>c+c).join("");
+  return [1,3,5].map(i=>parseInt(h.substr(i,2),16));
+}
+function rgba(hex,a){ const [r,g,b]=hex2rgb(hex); return `rgba(${r},${g},${b},${a})`; }
+function mix(h1,h2,p){ const a=hex2rgb(h1), b=hex2rgb(h2);
+  return `rgb(${a.map((v,i)=>Math.round(v*p+b[i]*(1-p))).join(",")})`; }
+
+/* 테마 */
 function applyTheme(){
   const r=document.documentElement.style;
   r.setProperty("--bg",S.theme.bg); r.setProperty("--panel",S.theme.panel);
   r.setProperty("--ink",S.theme.ink); r.setProperty("--accent",S.theme.accent);
   r.setProperty("--radius",S.theme.radius+"px");
+  const A=S.theme.accent, I=S.theme.ink;
+  r.setProperty("--line", rgba(A,.26));
+  r.setProperty("--line-soft", rgba(A,.14));
+  r.setProperty("--muted", rgba(I,.58));
+  r.setProperty("--faint", rgba(I,.34));
+  r.setProperty("--tint", rgba(A,.08));
+  r.setProperty("--tint2", rgba(A,.22));
+  r.setProperty("--soft", `0 6px 18px ${rgba(A,.14)}`);
+  r.setProperty("--pop", `0 3px 0 ${rgba(A,.22)}`);
+  r.setProperty("--today-ink", mix(A,I,.72));
+  r.setProperty("--grid", rgba(A,.05));
+  r.setProperty("--wash", rgba(A,.10));
+  r.setProperty("--hover", rgba(I,.04));
   save();
 }
 const PRESETS=[
@@ -617,7 +658,7 @@ function bits(){
     p.style.left=(r.left+r.width*(0.3+Math.random()*0.4))+"px";
     p.style.top=(r.top+r.height*(S.folded?0.5:0.6))+"px";
     p.style.fontSize=(9+Math.random()*8)+"px";
-    p.style.color = i%3 ? S.theme.accent : `color-mix(in srgb, ${S.theme.accent} 45%, #fff)`;
+    p.style.color = i%3 ? S.theme.accent : mix(S.theme.accent, "#ffffff", .45);
     p.style.setProperty("--dx", ((Math.random()-.5)*70).toFixed(0)+"px");
     p.style.setProperty("--dy", (-60-Math.random()*50).toFixed(0)+"px");
     p.style.animationDelay=(i*40)+"ms";
@@ -719,6 +760,7 @@ function notify(msg){
 }
 
 /* 패널 */
+const TABNAME={image:"PHOTO",lines:"SCRIPT",color:"COLOR",tasks:"TASKS",log:"LOG",ooc:"PROMPT",timer:"SETTINGS"};
 let tab="image";
 function toggleRow(label,key,cb){
   const r=el("div","row"); r.innerHTML=`<span>${label}</span>`;
@@ -732,6 +774,7 @@ function numRow(label,key,min,max){
   i.onchange=()=>{ const v=Math.min(max,Math.max(min,parseInt(i.value)||min)); i.value=v; S.settings[key]=v; save(); if(!st.running) reset(); paintDots(); };
   r.appendChild(i); return r;
 }
+
 function loadH2C(){
   return new Promise((res,rej)=>{
     if(window.html2canvas) return res();
@@ -741,47 +784,55 @@ function loadH2C(){
     document.head.appendChild(sc);
   });
 }
-async function capture(){
+async function flattenPhoto(){
+  const im=cur();
+  if(!(im && img.naturalWidth && !S.folded)) return null;
+  try{
+    const fw=frame.clientWidth, fh=frame.clientHeight;
+    const c=document.createElement("canvas");
+    c.width=Math.round(fw*2); c.height=Math.round(fh*2);
+    const g=c.getContext("2d");
+    g.scale(2,2); g.translate(fw/2+T.x, fh/2+T.y); g.scale(T.s,T.s);
+    g.drawImage(img, -img.naturalWidth/2, -img.naturalHeight/2);
+    const flat=document.createElement("div");
+    flat.style.cssText="position:absolute;inset:0;z-index:1;background-size:cover;background-position:center;";
+    flat.style.backgroundImage=`url(${c.toDataURL("image/jpeg",0.92)})`;
+    frame.insertBefore(flat, frame.firstChild);
+    img.style.display="none";
+    return flat;
+  }catch(e){ return null; }
+}
+async function capture(node, ratio, name){
   toast("캡처하는 중…");
   try{ await loadH2C(); }catch(e){ return toast("캡처 도구를 불러오지 못했어요"); }
-
-  // 사진을 프레임 크기의 평면 이미지로 먼저 구워둔다
-  let flat=null;
-  const im=cur();
-  if(im && img.naturalWidth && !S.folded){
-    try{
-      const fw=frame.clientWidth, fh=frame.clientHeight;
-      const c=document.createElement("canvas");
-      c.width=Math.round(fw*2); c.height=Math.round(fh*2);
-      const g=c.getContext("2d");
-      g.scale(2,2);
-      g.translate(fw/2 + T.x, fh/2 + T.y);
-      g.scale(T.s, T.s);
-      g.drawImage(img, -img.naturalWidth/2, -img.naturalHeight/2);
-      flat=document.createElement("div");
-      flat.style.cssText="position:absolute;inset:0;z-index:1;background-size:cover;background-position:center;";
-      flat.style.backgroundImage=`url(${c.toDataURL("image/jpeg",0.92)})`;
-      frame.insertBefore(flat, frame.firstChild);
-      img.style.visibility="hidden";
-    }catch(e){ flat=null; }
-  }
-
-  const node=document.querySelector(".app");
+  const flat = node.contains(frame) ? await flattenPhoto() : null;
+  const cleanup=()=>{ if(flat){ flat.remove(); img.style.display=""; } document.body.classList.remove("shotting"); };
+  document.body.classList.add("shotting");
+  await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
   const bg=getComputedStyle(document.body).backgroundColor;
+  const opts=(scale)=>({
+    backgroundColor:bg, scale, useCORS:true, logging:false, imageTimeout:0,
+    ignoreElements:(n)=>n.classList && (n.classList.contains("railtop")||n.classList.contains("bit")),
+    onclone:(doc)=>{
+      doc.querySelectorAll("img").forEach(n=>n.remove());
+      doc.body.style.backgroundImage="none";
+      doc.querySelectorAll("*").forEach(n=>{
+        n.style.backdropFilter="none"; n.style.webkitBackdropFilter="none";
+      });
+    }
+  });
   let shot;
-  try{
-    shot=await html2canvas(node,{backgroundColor:bg, scale:2, useCORS:true, logging:false, imageTimeout:0});
-  }catch(e){
-    try{ shot=await html2canvas(node,{backgroundColor:bg, scale:1, useCORS:true, logging:false, imageTimeout:0}); }
-    catch(e2){ cleanup(); return toast("캡처에 실패했어요"); }
+  try{ shot=await html2canvas(node, opts(2)); }
+  catch(e){
+    console.error(e);
+    try{ shot=await html2canvas(node, opts(1)); }
+    catch(e2){ cleanup(); console.error(e2); return toast("캡처 실패: "+(e2 && e2.message ? e2.message : "알 수 없는 오류")); }
   }
   cleanup();
-  function cleanup(){ if(flat){ flat.remove(); img.style.visibility=""; } }
 
-  const gap=Math.round(shot.width*0.045);
+  const gap=Math.round(Math.max(shot.width,shot.height)*0.05);
   let W=shot.width+gap*2, H=shot.height+gap*2;
-  const R=16/10;
-  if(W/H < R) W=Math.round(H*R); else H=Math.round(W/R);
+  if(ratio){ if(W/H < ratio) W=Math.round(H*ratio); else H=Math.round(W/ratio); }
   const c2=document.createElement("canvas"); c2.width=W; c2.height=H;
   const x=c2.getContext("2d");
   x.fillStyle=bg; x.fillRect(0,0,W,H);
@@ -792,9 +843,9 @@ async function capture(){
     const d=new Date();
     const a=document.createElement("a");
     a.href=URL.createObjectURL(b);
-    a.download=`pomodoro-${d.getFullYear()}${pad2(d.getMonth()+1)}${pad2(d.getDate())}.png`;
+    a.download=`pomodoro-${name}-${d.getFullYear()}${pad2(d.getMonth()+1)}${pad2(d.getDate())}.png`;
     a.click();
-    setTimeout(()=>URL.revokeObjectURL(a.href), 3000);
+    setTimeout(()=>URL.revokeObjectURL(a.href),3000);
     toast("이미지를 저장했어요");
   }, "image/png");
 }
@@ -819,7 +870,7 @@ function renderPanel(){
 
   if(tab==="image"){
     const add=el("button","mini"); add.textContent="추가"; add.onclick=()=>$("#file").click();
-    title("사진",add);
+    title("PHOTO",add);
     const g=el("div","slots");
     S.images.forEach((im,i)=>{
       const s=el("div","slot"+(i===S.active?" on":"")); s.style.backgroundImage=`url(${im.src})`;
@@ -839,7 +890,7 @@ function renderPanel(){
   }
 
   if(tab==="lines"){
-    title("대사");
+    title("SCRIPT");
     note("한 줄에 하나씩 적어요. 여러 개를 적어두면 세션이 끝날 때마다 그중 <b>하나가 랜덤으로</b> 나와요.<br><b>{n}</b> 오늘 완료한 세션 수 · <b>{m}</b> 다음 세션 분 수.");
     const r=el("div","row"); r.innerHTML="<span>이름표</span>";
     const i=el("input"); i.type="text"; i.value=S.settings.speaker; i.style.width="118px";
@@ -857,7 +908,7 @@ function renderPanel(){
   }
 
   if(tab==="color"){
-    title("색상");
+    title("COLOR");
     const sw=el("div","swatches");
     PRESETS.forEach(pr=>{
       const b=el("button","swatch"); b.title=pr.n; b.style.background=pr.bg;
@@ -885,7 +936,7 @@ function renderPanel(){
   }
 
   if(tab==="timer"){
-    title("설정");
+    title("SETTINGS");
     p.appendChild(numRow("집중 (분)","focus",1,180));
     p.appendChild(numRow("휴식 (분)","short",1,60));
     p.appendChild(numRow("긴 휴식 (분)","long",1,90));
@@ -911,14 +962,14 @@ function renderPanel(){
       f.click(); };
     const rs=el("button","mini"); rs.textContent="초기화";
     rs.onclick=()=>{ if(confirm("사진·대사·메모·일정·기록이 모두 지워져요. 계속할까요?")){ localStorage.removeItem(KEY); localStorage.removeItem("pomodoro.v2"); location.reload(); } };
-    const cap=el("button","mini solid"); cap.textContent="화면 캡처";
-    cap.onclick=capture;
+    const cap=el("button","mini solid"); cap.textContent="전체 화면 캡처";
+    cap.onclick=()=>capture(document.querySelector(".app"), 16/10, "full");
     row.append(cap,ex,im,rs); p.appendChild(row);
-    note("화면 캡처는 16:10 비율 PNG로 저장돼요.<br>사진은 이 브라우저에만 저장되고, 백업 파일에는 포함되지 않아요.");
+    note("전체 화면은 16:10 PNG로 저장돼요. 오른쪽 위 <b>이 메뉴 캡처</b>를 누르면 지금 열려 있는 메뉴(할 일·기록 등)만 따로 저장돼요.<br>사진은 이 브라우저에만 저장되고, 백업 파일에는 포함되지 않아요.");
   }
 
   if(tab==="tasks"){
-    title("할 일");
+    title("TASKS");
     const add=el("input"); add.type="text"; add.placeholder="적고 엔터";
     add.onkeydown=e=>{ if(e.key==="Enter"&&add.value.trim()){ S.tasks.push({t:add.value.trim(),d:false}); add.value=""; save(); renderPanel(); } };
     p.appendChild(add);
@@ -948,7 +999,7 @@ function renderPanel(){
       try{ await navigator.clipboard.writeText(txt); toast("복사했어요"); }
       catch(e){ const t=$("#oocText"); t.select(); document.execCommand("copy"); toast("복사했어요"); }
     };
-    title("프롬프트",cp);
+    title("PROMPT",cp);
     note("AI에게 그대로 붙여넣으면 캐릭터 톤에 맞는 대사를 뽑아줘요. 받은 문장들을 <b>대사</b> 탭에 한 줄씩 넣으면 끝.");
     const t=el("textarea"); t.id="oocText"; t.value=S.ooc||"";
     t.style.minHeight="220px"; t.style.fontSize="12px"; t.style.lineHeight="1.7";
@@ -961,7 +1012,7 @@ function renderPanel(){
   }
 
   if(tab==="log"){
-    title("기록");
+    title("LOG");
     const ks=Object.keys(S.history).sort().reverse().slice(0,10);
     if(!ks.length) note("아직 완료한 세션이 없어요.");
     ks.forEach(k=>{ const [,m,d]=k.split("-"); const r=el("div","logrow");
@@ -972,9 +1023,11 @@ function renderPanel(){
     note(`집중 시간 약 ${Math.round(total*S.settings.focus/6)/10}시간.`);
   }
 }
+$("#btnShot").onclick=()=>capture($("#panel"), null, TABNAME[tab]||tab);
 $("#menu").addEventListener("click",e=>{
   const b=e.target.closest("button[data-tab]"); if(!b) return;
   tab=b.dataset.tab;
+  $("#shotName").textContent=TABNAME[tab]||"";
   [...$("#menu").children].forEach(x=>x.setAttribute("aria-selected",String(x===b)));
   renderPanel();
 });
