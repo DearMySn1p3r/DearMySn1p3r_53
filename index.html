@@ -3,7 +3,9 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>POMODORO.SITE</title>
+<title>POMODORO.NET</title>
+<link rel="icon" type="image/png" href="MOMO.png" />
+<link rel="apple-touch-icon" href="MOMO.png" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -335,7 +337,7 @@ body{
 <div class="app">
   <aside class="rail rail-left">
     <div class="card datecard">
-      <div class="wordmark">POMODORO<span>.SITE</span></div>
+      <div class="wordmark">POMODORO<span>.NET</span></div>
       <div class="hud">today</div>
       <div class="d" id="today">—</div>
       <div class="now" id="nowClock">00:00:00</div>
@@ -662,7 +664,7 @@ function paintClock(){
   const bar=$("#bar");
   if(bar.children.length!==SEG){ bar.innerHTML=""; for(let i=0;i<SEG;i++) bar.appendChild(el("i")); }
   [...bar.children].forEach((c,i)=>c.classList.toggle("on", i<done));
-  document.title = st.running ? `${txt} · ${st.phase==="focus"?"집중":"휴식"}` : "POMODORO.SITE";
+  document.title = st.running ? `${txt} · ${st.phase==="focus"?"집중":"휴식"}` : "POMODORO.NET";
 }
 function paintDots(){
   const n=Math.max(1,S.settings.longEvery), done=countToday()%n, d=$("#dots"); d.innerHTML="";
@@ -713,7 +715,7 @@ function chime(hi=true){
 }
 function notify(msg){
   if(!S.settings.notify||!("Notification" in window)||Notification.permission!=="granted") return;
-  try{ new Notification("POMODORO.SITE",{body:msg}); }catch(e){}
+  try{ new Notification("POMODORO.NET",{body:msg}); }catch(e){}
 }
 
 /* 패널 */
@@ -742,26 +744,59 @@ function loadH2C(){
 async function capture(){
   toast("캡처하는 중…");
   try{ await loadH2C(); }catch(e){ return toast("캡처 도구를 불러오지 못했어요"); }
+
+  // 사진을 프레임 크기의 평면 이미지로 먼저 구워둔다
+  let flat=null;
+  const im=cur();
+  if(im && img.naturalWidth && !S.folded){
+    try{
+      const fw=frame.clientWidth, fh=frame.clientHeight;
+      const c=document.createElement("canvas");
+      c.width=Math.round(fw*2); c.height=Math.round(fh*2);
+      const g=c.getContext("2d");
+      g.scale(2,2);
+      g.translate(fw/2 + T.x, fh/2 + T.y);
+      g.scale(T.s, T.s);
+      g.drawImage(img, -img.naturalWidth/2, -img.naturalHeight/2);
+      flat=document.createElement("div");
+      flat.style.cssText="position:absolute;inset:0;z-index:1;background-size:cover;background-position:center;";
+      flat.style.backgroundImage=`url(${c.toDataURL("image/jpeg",0.92)})`;
+      frame.insertBefore(flat, frame.firstChild);
+      img.style.visibility="hidden";
+    }catch(e){ flat=null; }
+  }
+
   const node=document.querySelector(".app");
   const bg=getComputedStyle(document.body).backgroundColor;
-  const shot=await html2canvas(node,{backgroundColor:bg, scale:2, useCORS:true, logging:false});
+  let shot;
+  try{
+    shot=await html2canvas(node,{backgroundColor:bg, scale:2, useCORS:true, logging:false, imageTimeout:0});
+  }catch(e){
+    try{ shot=await html2canvas(node,{backgroundColor:bg, scale:1, useCORS:true, logging:false, imageTimeout:0}); }
+    catch(e2){ cleanup(); return toast("캡처에 실패했어요"); }
+  }
+  cleanup();
+  function cleanup(){ if(flat){ flat.remove(); img.style.visibility=""; } }
 
-  // 예쁜 비율(16:10)로 여백 잡아 다시 그리기
-  const pad=Math.round(shot.width*0.045);
-  let W=shot.width+pad*2, H=shot.height+pad*2;
+  const gap=Math.round(shot.width*0.045);
+  let W=shot.width+gap*2, H=shot.height+gap*2;
   const R=16/10;
   if(W/H < R) W=Math.round(H*R); else H=Math.round(W/R);
-  const c=document.createElement("canvas"); c.width=W; c.height=H;
-  const x=c.getContext("2d");
+  const c2=document.createElement("canvas"); c2.width=W; c2.height=H;
+  const x=c2.getContext("2d");
   x.fillStyle=bg; x.fillRect(0,0,W,H);
   x.drawImage(shot, Math.round((W-shot.width)/2), Math.round((H-shot.height)/2));
 
-  const d=new Date();
-  const a=document.createElement("a");
-  a.href=c.toDataURL("image/png");
-  a.download=`pomodoro-${d.getFullYear()}${pad2(d.getMonth()+1)}${pad2(d.getDate())}.png`;
-  a.click();
-  toast("이미지를 저장했어요");
+  c2.toBlob(b=>{
+    if(!b) return toast("캡처에 실패했어요");
+    const d=new Date();
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(b);
+    a.download=`pomodoro-${d.getFullYear()}${pad2(d.getMonth()+1)}${pad2(d.getDate())}.png`;
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 3000);
+    toast("이미지를 저장했어요");
+  }, "image/png");
 }
 const pad2=n=>String(n).padStart(2,"0");
 
