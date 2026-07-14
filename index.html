@@ -730,6 +730,41 @@ function numRow(label,key,min,max){
   i.onchange=()=>{ const v=Math.min(max,Math.max(min,parseInt(i.value)||min)); i.value=v; S.settings[key]=v; save(); if(!st.running) reset(); paintDots(); };
   r.appendChild(i); return r;
 }
+function loadH2C(){
+  return new Promise((res,rej)=>{
+    if(window.html2canvas) return res();
+    const sc=document.createElement("script");
+    sc.src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+    sc.onload=()=>res(); sc.onerror=()=>rej();
+    document.head.appendChild(sc);
+  });
+}
+async function capture(){
+  toast("캡처하는 중…");
+  try{ await loadH2C(); }catch(e){ return toast("캡처 도구를 불러오지 못했어요"); }
+  const node=document.querySelector(".app");
+  const bg=getComputedStyle(document.body).backgroundColor;
+  const shot=await html2canvas(node,{backgroundColor:bg, scale:2, useCORS:true, logging:false});
+
+  // 예쁜 비율(16:10)로 여백 잡아 다시 그리기
+  const pad=Math.round(shot.width*0.045);
+  let W=shot.width+pad*2, H=shot.height+pad*2;
+  const R=16/10;
+  if(W/H < R) W=Math.round(H*R); else H=Math.round(W/R);
+  const c=document.createElement("canvas"); c.width=W; c.height=H;
+  const x=c.getContext("2d");
+  x.fillStyle=bg; x.fillRect(0,0,W,H);
+  x.drawImage(shot, Math.round((W-shot.width)/2), Math.round((H-shot.height)/2));
+
+  const d=new Date();
+  const a=document.createElement("a");
+  a.href=c.toDataURL("image/png");
+  a.download=`pomodoro-${d.getFullYear()}${pad2(d.getMonth()+1)}${pad2(d.getDate())}.png`;
+  a.click();
+  toast("이미지를 저장했어요");
+}
+const pad2=n=>String(n).padStart(2,"0");
+
 function editTask(row, t){
   row.innerHTML="";
   const inp=el("input"); inp.type="text"; inp.value=t.t; inp.className="evedit";
@@ -841,8 +876,10 @@ function renderPanel(){
       f.click(); };
     const rs=el("button","mini"); rs.textContent="초기화";
     rs.onclick=()=>{ if(confirm("사진·대사·메모·일정·기록이 모두 지워져요. 계속할까요?")){ localStorage.removeItem(KEY); localStorage.removeItem("pomodoro.v2"); location.reload(); } };
-    row.append(ex,im,rs); p.appendChild(row);
-    note("사진은 이 브라우저에만 저장돼요. 백업 파일에는 포함되지 않아요.");
+    const cap=el("button","mini solid"); cap.textContent="화면 캡처";
+    cap.onclick=capture;
+    row.append(cap,ex,im,rs); p.appendChild(row);
+    note("화면 캡처는 16:10 비율 PNG로 저장돼요.<br>사진은 이 브라우저에만 저장되고, 백업 파일에는 포함되지 않아요.");
   }
 
   if(tab==="tasks"){
