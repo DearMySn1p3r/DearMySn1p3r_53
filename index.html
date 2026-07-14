@@ -464,7 +464,7 @@ body.shotting{background-image:none} .panel{max-height:none}
 
 <script>
 const DEFAULTS = {
-  settings:{ focus:25, short:5, long:15, longEvery:4, autoStart:false, sound:true, notify:false, typing:true, speaker:"" },
+  settings:{ focus:25, short:5, long:15, longEvery:4, autoStart:false, sound:true, notify:false, typing:true, shuffle:false, speaker:"" },
   theme:{ bg:"#FFF7FA", panel:"#FFFFFF", ink:"#3D2F35", accent:"#F2799F", radius:14 },
   lines:{ focus:[], rest:[] },
   images:[], active:0, locked:false, folded:false,
@@ -667,6 +667,14 @@ function bits(){
   }
 }
 
+function shufflePhoto(){
+  if(!S.settings.shuffle || S.images.length<2) return;
+  let i=S.active;
+  while(i===S.active) i=Math.floor(Math.random()*S.images.length);
+  S.active=i; renderImage(); save();
+  if(tab==="image") renderPanel();
+}
+
 /* 뽀모도로 */
 const st={phase:"focus",running:false,remain:S.settings.focus*60000,endAt:0};
 const mins=p=>p==="focus"?S.settings.focus:p==="long"?S.settings.long:S.settings.short;
@@ -689,6 +697,7 @@ function complete(){
   st.running=false;
   const wasFocus=st.phase==="focus";
   if(wasFocus){ const k=todayKey(); S.history[k]=(S.history[k]||0)+1; save(); paintStreak(); renderCal(); bits(); }
+  shufflePhoto();
   chime(wasFocus);
   notify(wasFocus?"집중이 끝났어요":"휴식이 끝났어요");
   say(wasFocus?"focus":"rest");
@@ -883,6 +892,7 @@ function renderPanel(){
     p.appendChild(g);
     note("휠 · 두 손가락 = 확대·축소<br>드래그 = 이동 · 더블클릭 = 맞춤<br>잠그면 사진이 움직이지 않아요.");
     sep();
+    p.appendChild(toggleRow("세션 끝날 때 사진 랜덤 전환","shuffle"));
     const w=el("div","swatches");
     const f=el("button","mini"); f.textContent="화면에 맞추기"; f.onclick=()=>{ if(S.locked) return toast("잠금을 먼저 풀어주세요"); fit(); };
     const o=el("button","mini"); o.textContent="가운데로"; o.onclick=()=>{ if(S.locked) return toast("잠금을 먼저 풀어주세요"); T.x=0; T.y=0; drawT(); commitT(); };
