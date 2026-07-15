@@ -402,6 +402,7 @@ body.shotting{background-image:none} .panel{max-height:none}
       <button class="primary" id="btnStart">시작</button>
       <button id="btnReset">리셋</button>
       <button id="btnSkip">건너뛰기</button>
+      <button id="btnLine">대사</button>
       <span class="hint">space 시작·정지 · L 잠금 · R 리셋 · H 사진 접기</span>
     </div>
   </main>
@@ -464,12 +465,13 @@ body.shotting{background-image:none} .panel{max-height:none}
 
 <script>
 const DEFAULTS = {
-  settings:{ focus:25, short:5, long:15, longEvery:4, autoStart:false, sound:true, notify:false, typing:true, shuffle:false, speaker:"" },
+  settings:{ focus:25, short:5, long:15, longEvery:4, autoStart:false, sound:true, notify:false, typing:true, shuffle:false, duringMode:"auto", duringEvery:5, speaker:"" },
   theme:{ bg:"#FFF7FA", panel:"#FFFFFF", ink:"#3D2F35", accent:"#F2799F", radius:14 },
-  lines:{ focus:[], rest:[] },
+  lines:{ during:[], focus:[], rest:[] },
   images:[], active:0, locked:false, folded:false,
   tasks:[], history:{}, memos:{}, events:{},
-  ooc:`*[OOC: 이전 RP 중지. 새로운 상황 전개. NPC의 페르소나, 말투, PC와의 관계성을 캐해석하여 아래 두 가지 상황의 대사를 각각 여러 개 출력하라.
+  ooc:`*[OOC: 이전 RP 중지. 새로운 상황 전개. PC가 사용하는 뽀모도로 타이머 사이트에 NPC의 대사가 표시된다. NPC의 페르소나, 말투, PC와의 관계성을 캐해석하여 아래 세 가지 상황의 대사를 각각 여러 개 출력하라.
+· 집중 세션 도중: PC가 집중하고 있는 동안 NPC가 곁에서 건네는 말. 방해하지 않으려 조용히 지켜보거나, 응원하거나, 딴짓하지 말라고 넌지시 감시하는 등 NPC답게.
 · 집중 세션 종료 시: PC가 한 세션을 끝냈을 때 NPC가 건네는 말. 칭찬, 잔소리, 쉬라는 권유 등 NPC답게.
 · 휴식 종료 시: 휴식이 끝나고 다시 집중해야 할 때 NPC가 건네는 말. 재촉, 응원, 놀림 등 NPC답게.
 각 상황별로 최소 8개 이상 작성하며, 짧고 한 줄로 떨어지는 형태여야 한다. 대사 안에는 필요에 따라 {n}(오늘 완료한 세션 수), {m}(다음 세션 분 수) 변수를 자연스럽게 활용할 수 있다. 반드시 넣을 필요는 없다. 반복해서 볼 대사이므로 지나치게 무겁지 않게, NPC 특유의 톤이 일관되게 유지되도록 작성할 것.]*`
@@ -681,14 +683,30 @@ const st={phase:"focus",running:false,remain:S.settings.focus*60000,endAt:0};
 const mins=p=>p==="focus"?S.settings.focus:p==="long"?S.settings.long:S.settings.short;
 const countToday=()=>S.history[todayKey()]||0;
 const SEG=24;
+function refreshLineBtn(){
+  const b=$("#btnLine");
+  if(b) b.style.display = S.settings.duringMode==="button" ? "" : "none";
+}
 function setPhase(p){
   st.phase=p; st.running=false; st.remain=mins(p)*60000;
   $("#phaseLabel").textContent = p==="focus"?"집중":p==="long"?"긴 휴식":"휴식";
   $("#clock").classList.toggle("rest", p!=="focus");
   paintClock(); paintDots();
 }
-setInterval(()=>{ if(st.running){ st.remain=Math.max(0,st.endAt-Date.now()); paintClock(); if(st.remain<=0) complete(); } },250);
+let nextDuring=0;
+setInterval(()=>{
+  if(st.running){
+    st.remain=Math.max(0,st.endAt-Date.now());
+    paintClock();
+    if(st.phase==="focus" && S.settings.duringMode==="auto" && nextDuring && Date.now()>=nextDuring && st.remain>3000){
+      say("during");
+      nextDuring = Date.now() + Math.max(1,S.settings.duringEvery)*60000;
+    }
+    if(st.remain<=0) complete();
+  }
+},250);
 function start(){ if(st.running) return; st.running=true; st.endAt=Date.now()+st.remain;
+  if(st.phase==="focus") nextDuring = Date.now() + Math.max(1,S.settings.duringEvery)*60000;
   $("#btnStart").textContent="일시정지"; $("#clock").classList.remove("paused"); paintClock(); }
 function pause(){ if(!st.running) return; st.running=false; st.remain=Math.max(0,st.endAt-Date.now());
   $("#btnStart").textContent="이어서"; $("#clock").classList.add("paused"); }
@@ -911,13 +929,29 @@ function renderPanel(){
     i.oninput=()=>{ S.settings.speaker=i.value; $("#speaker").textContent=i.value; save(); };
     r.appendChild(i); p.appendChild(r);
     sep();
-    [["focus","집중이 끝났을 때"],["rest","휴식이 끝났을 때"]].forEach(([k,label])=>{
+    [["during","집중하는 도중"],["focus","집중이 끝났을 때"],["rest","휴식이 끝났을 때"]].forEach(([k,label])=>{
       const l=el("div","sub"); l.textContent=label; p.appendChild(l);
       const t=el("textarea"); t.value=(S.lines[k]||[]).join("\n");
       t.oninput=()=>{ S.lines[k]=t.value.split("\n"); save(); };
       p.appendChild(t);
       const b=el("button","mini"); b.textContent="미리 보기"; b.onclick=()=>say(k); p.appendChild(b);
     });
+    sep();
+    const dh=el("div","sub"); dh.innerHTML="<b>집중 도중 대사</b> 표시 방식"; p.appendChild(dh);
+    const seg=el("div","tabs"); seg.style.width="100%";
+    [["auto","자동"],["button","버튼"],["off","끄기"]].forEach(([m,label])=>{
+      const b=el("button"); b.textContent=label; b.className = S.settings.duringMode===m?"on":"";
+      b.onclick=()=>{ S.settings.duringMode=m; save(); renderPanel(); refreshLineBtn(); };
+      seg.appendChild(b);
+    });
+    p.appendChild(seg);
+    if(S.settings.duringMode==="auto") p.appendChild(numRow("몇 분마다 나올까","duringEvery",1,60));
+    const dn=el("div","sub");
+    dn.innerHTML = S.settings.duringMode==="auto" ? "집중하는 동안 정해진 간격마다 도중 대사가 나와요."
+                 : S.settings.duringMode==="button" ? "대사창 옆 <b>대사</b> 버튼을 누를 때만 나와요."
+                 : "집중 도중 대사를 표시하지 않아요.";
+    p.appendChild(dn);
+    sep();
     p.appendChild(toggleRow("한 글자씩 타이핑","typing"));
   }
 
@@ -1178,6 +1212,11 @@ $("#swTabs").onclick=e=>{
 $("#btnStart").onclick=()=>st.running?pause():start();
 $("#btnReset").onclick=reset;
 $("#btnSkip").onclick=complete;
+$("#btnLine").onclick=()=>{
+  const pool=(S.lines.during||[]).filter(x=>x.trim());
+  if(!pool.length){ toast("‘집중하는 도중’ 대사를 먼저 적어주세요"); return; }
+  say("during");
+};
 window.addEventListener("keydown",e=>{
   if(/INPUT|TEXTAREA/.test(e.target.tagName)) return;
   const k=e.key.toLowerCase();
@@ -1201,7 +1240,7 @@ setInterval(paintNow,1000);
 (function(){
   applyTheme(); paintNow(); setLock(S.locked); setFold(!!S.folded); renderImage();
   setPhase("focus"); paintStreak(); renderPanel();
-  renderCal(); loadDay(); swPaint();
+  renderCal(); loadDay(); swPaint(); refreshLineBtn();
   $("#speaker").textContent=S.settings.speaker||"";
   window.addEventListener("resize",()=>{ if(cur()&&!cur().t) fit(); });
 })();
